@@ -26,52 +26,43 @@ def run_query(query):
     with conn.cursor() as cur:
         cur.execute(query)
         return cur.fetchall()
-
-#rows = run_query("SELECT * from mytable;")
-
-# Print results.
-
-
-
-
-
-
-def load_Data_from_sql(battery_pack_id):
-    # some options to make dataframes display better on screen:
-    pd.set_option('display.max_columns', None)
-    pd.set_option('expand_frame_repr', False)
-    # print('Getting data from server for battery: ',str(battery_id) )
-    # set up input data connection:
-    # conn_details = ['postgres', 'energylancaster',
-    #                 'database-dapp-prod-01.ciw65t1507ge.eu-west-2.rds.amazonaws.com', 'postgres']
-    # conn = psycopg2.connect(database=conn_details[3], user=conn_details[0],
-    #                         password=conn_details[1], host=conn_details[2], port="5432")
-    # cur = conn.cursor()
-
-    # build the sql query we need:
-    # get specific battery id
-
-    sql_query = 'select *  FROM parsed_data_bess​."Pack_Timeseries" where battery_pack_id=' + battery_pack_id + ' ;'
-    # get all data
-    print('sql_query - 1 : ', sql_query)
-
-    # run the query (can take a while) and bring the results into a dataframe:
-    #df = pd.read_sql(sql_query, conn)
-    df = run_query(sql_query)
-    sql_query2 = 'select *  FROM calculated_data."calculate_data_SOH_bess" where battery_pack_id=' + battery_pack_id + ' ;'
-    print('sql_query - 2: ', sql_query2)
-    df2 = run_query(sql_query2)
-    #df2 = pd.read_sql(sql_query2, conn)
-    # columns_names=df.columns
-    # close the inbound connection:
-    return df, df2  # ,df_bat_details
+# def load_Data_from_sql(battery_pack_id):
+#     # some options to make dataframes display better on screen:
+#     pd.set_option('display.max_columns', None)
+#     pd.set_option('expand_frame_repr', False)
+#     # print('Getting data from server for battery: ',str(battery_id) )
+#     # set up input data connection:
+#     # conn_details = ['postgres', 'energylancaster',
+#     #                 'database-dapp-prod-01.ciw65t1507ge.eu-west-2.rds.amazonaws.com', 'postgres']
+#     # conn = psycopg2.connect(database=conn_details[3], user=conn_details[0],
+#     #                         password=conn_details[1], host=conn_details[2], port="5432")
+#     # cur = conn.cursor()
+#
+#     sql_query = 'select *  FROM parsed_data_bess​."Pack_Timeseries" where battery_pack_id=' + battery_pack_id + ' ;'
+#     # get all data
+#     print('sql_query - 1 : ', sql_query)
+#
+#     # run the query (can take a while) and bring the results into a dataframe:
+#     #df = pd.read_sql(sql_query, conn)
+#     df = run_query(sql_query)
+#     sql_query2 = 'select *  FROM calculated_data."calculate_data_SOH_bess" where battery_pack_id=' + battery_pack_id + ' ;'
+#     print('sql_query - 2: ', sql_query2)
+#     df2 = run_query(sql_query2)
+#     #df2 = pd.read_sql(sql_query2, conn)
+#     # columns_names=df.columns
+#     # close the inbound connection:
+#     return df, df2  # ,df_bat_details
 
 
 df_temp_list = []
 df_temp_list2 = []
 for battery_pack_id in range(501, 507):
     print(battery_pack_id)
-    df_temp, df_temp2 = load_Data_from_sql(str(battery_pack_id))
+    sql_query = 'select *  FROM parsed_data_bess​."Pack_Timeseries" where battery_pack_id=' +battery_pack_id + ' ;'
+    sql_query2 = 'select *  FROM calculated_data."calculate_data_SOH_bess" where battery_pack_id=' +battery_pack_id + ' ;'
+    df_temp = run_query(sql_query)
+    df_temp2 = run_query(sql_query2)
+    #df_temp, df_temp2 = load_Data_from_sql(str(battery_pack_id))
     df_temp_list.append(df_temp)
     df_temp_list2.append(df_temp2)
 
@@ -79,14 +70,13 @@ df_all = pd.concat(df_temp_list, ignore_index=True)
 df_all_SOH_cal = pd.concat(df_temp_list2, ignore_index=True)
 # df_all.columns
 # In[ ]: load data
-df_specs = pd.read_csv(
-    r'C:\Users\PradeepManickam\OneDrive - Altelium\Documents\Pradeep\DashBoard\ms_almin\bess_specs.csv.csv',
-    index_col=None)
-df_health = pd.read_csv(
-    r'C:\Users\PradeepManickam\OneDrive - Altelium\Documents\Pradeep\DashBoard\ms_almin\battery_health.csv',
-    index_col=None)
-df_usage = pd.read_csv(
-    r'C:\Users\PradeepManickam\OneDrive - Altelium\Documents\Pradeep\DashBoard\ms_almin\Battery_Usage_Summary.csv')
+
+url_bess_specs ='https://raw.githubusercontent.com/pradeep-altelium/bess_visualisation/main/bess_specs.csv'
+url_battery_usage_summary = 'https://raw.githubusercontent.com/pradeep-altelium/bess_visualisation/main/Battery_Usage_Summary.csv'
+url_battery_health = 'https://raw.githubusercontent.com/pradeep-altelium/bess_visualisation/main/battery_health.csv'
+df_specs = pd.read_csv(url_bess_specs,index_col=0)
+df_health = pd.read_csv(url_battery_health,index_col=0)
+df_usage = pd.read_csv(url_battery_usage_summary,index_col=0)
 # df_all=pd.read_csv(r'C:\Users\PanagiotisErodotou\OneDrive - Altelium\Documents\Python Scripts\Altelium_codes\CE\dashboard_bess_fake\df_all.csv')
 # df_all.to_csv(r'C:\Users\PanagiotisErodotou\OneDrive - Altelium\Documents\Python Scripts\Altelium_codes\CE\dashboard_bess_fake\df_all.csv')
 # print('get min and max and group by id took : ',str((time.time() - start_time)/60)+'minutes')
