@@ -8,6 +8,32 @@ import psycopg2
 from scipy import stats
 import streamlit as st
 
+# streamlit_app.py
+
+
+# Initialize connection.
+# Uses st.cache to only run once.
+@st.cache(allow_output_mutation=True, hash_funcs={"_thread.RLock": lambda _: None})
+def init_connection():
+    return psycopg2.connect(**st.secrets["postgres"])
+
+conn = init_connection()
+
+# Perform query.
+# Uses st.cache to only rerun when the query changes or after 10 min.
+@st.cache(ttl=600)
+def run_query(query):
+    with conn.cursor() as cur:
+        cur.execute(query)
+        return cur.fetchall()
+
+#rows = run_query("SELECT * from mytable;")
+
+# Print results.
+
+
+
+
 
 
 def load_Data_from_sql(battery_pack_id):
@@ -16,11 +42,11 @@ def load_Data_from_sql(battery_pack_id):
     pd.set_option('expand_frame_repr', False)
     # print('Getting data from server for battery: ',str(battery_id) )
     # set up input data connection:
-    conn_details = ['postgres', 'energylancaster',
-                    'database-dapp-prod-01.ciw65t1507ge.eu-west-2.rds.amazonaws.com', 'postgres']
-    conn = psycopg2.connect(database=conn_details[3], user=conn_details[0],
-                            password=conn_details[1], host=conn_details[2], port="5432")
-    cur = conn.cursor()
+    # conn_details = ['postgres', 'energylancaster',
+    #                 'database-dapp-prod-01.ciw65t1507ge.eu-west-2.rds.amazonaws.com', 'postgres']
+    # conn = psycopg2.connect(database=conn_details[3], user=conn_details[0],
+    #                         password=conn_details[1], host=conn_details[2], port="5432")
+    # cur = conn.cursor()
 
     # build the sql query we need:
     # get specific battery id
@@ -30,10 +56,12 @@ def load_Data_from_sql(battery_pack_id):
     print('sql_query - 1 : ', sql_query)
 
     # run the query (can take a while) and bring the results into a dataframe:
-    df = pd.read_sql(sql_query, conn)
+    #df = pd.read_sql(sql_query, conn)
+    df = run_query(sql_query)
     sql_query2 = 'select *  FROM calculated_data."calculate_data_SOH_bess" where battery_pack_id=' + battery_pack_id + ' ;'
     print('sql_query - 2: ', sql_query2)
-    df2 = pd.read_sql(sql_query2, conn)
+    df2 = run_query(sql_query2)
+    #df2 = pd.read_sql(sql_query2, conn)
     # columns_names=df.columns
     # close the inbound connection:
     conn.close()
