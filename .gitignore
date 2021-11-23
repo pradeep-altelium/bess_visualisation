@@ -1,8 +1,0 @@
-# .streamlit/secrets.toml
-
-[postgres]
-host = "postgres"
-port = 5432
-dbname = "database-dapp-prod-01.ciw65t1507ge.eu-west-2.rds.amazonaws.com"
-user = "postgres"
-password = "energylancaster"
