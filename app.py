@@ -64,7 +64,6 @@ def load_Data_from_sql(battery_pack_id):
     #df2 = pd.read_sql(sql_query2, conn)
     # columns_names=df.columns
     # close the inbound connection:
-    conn.close()
     return df, df2  # ,df_bat_details
 
 
